@@ -1,0 +1,9 @@
+.board {
+  width: 100%;
+  display: grid;
+  height: 100%;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  /* border: var(--grid-border-size) solid var(--border-color); */
+  gap: 0px;
+}

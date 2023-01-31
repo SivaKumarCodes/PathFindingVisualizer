@@ -1,0 +1,12 @@
+<div
+  class="board"
+  id="board"
+  [style.--columns]="boardCols"
+  [style.--rows]="boardRows"
+>
+  <app-cell
+    *ngFor="let obj of data"
+    id="cell-{{ 'i-' + obj.row + '-j-' + obj.col }}"
+    [visited]="obj.visited"
+  ></app-cell>
+</div>
