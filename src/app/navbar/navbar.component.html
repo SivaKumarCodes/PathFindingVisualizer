@@ -1,3 +1,21 @@
-<button class="start" (click)="dfsStart()">Dfs</button>
-<button class="start" (click)="bfsStart()">Bfs</button>
-<button class="start" (click)="clearBoard()">Clear</button>
+<a id="refreshButton" class="navbar-brand" href="#">PathFinding Visualizer</a>
+<div
+  class="dropdown-container noselect"
+  (click)="setAlgoVisible($event)"
+  [ngClass]="{ 'dropdown-container-active': algoVisible }"
+>
+  <p class="dropdown-title">Algorithms <span class="caret"></span></p>
+  <ul
+    class="dropdown-list"
+    [ngClass]="{ 'dropdown-list-visible': algoVisible }"
+  >
+    <li
+      class="dropdown-options"
+      *ngFor="let option of algoOptions"
+      (click)="setAlgoSelected(option)"
+    >
+      {{ option }}
+    </li>
+  </ul>
+</div>
+<button class="start">Visualize {{ algoSelected }}</button>

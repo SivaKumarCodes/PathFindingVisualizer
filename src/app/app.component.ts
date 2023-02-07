@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, ViewChild } from '@angular/core';
-import { BoardComponent } from './board/board.component';
+import {Component, ViewChild} from '@angular/core';
+import {BoardComponent} from './board/board.component';
 
 @Component({
   selector: 'app-root',

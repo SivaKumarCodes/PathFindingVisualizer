@@ -1,1 +1,7 @@
-<div class="cell" [ngClass]="{ visited: visited }"></div>
+<div class="cell" [ngClass]="{ visited: visited }" (dragenter)="dragEnter($event)" (dragleave)="dragLeave($event)"
+     (dragover)="dragOver($event)" (drop)="drop($event)">
+  <img *ngIf="isStart" class="start" src="/assets/img/svg/start.svg" alt="start" draggable="true"
+       (dragstart)="dragStart($event)" (dragend)="dragEnd($event)"/>
+  <img *ngIf="isEnd" class="end" src="/assets/img/svg/end.svg" alt="end" draggable="true"
+       (dragstart)="dragStart($event)" (dragend)="dragEnd($event)"/>
+</div>

@@ -1,12 +1,18 @@
 import { Component, ElementRef, OnInit, Self } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
-type cell = {
+export type cell = {
   row: number;
   col: number;
 };
 
-type cellData = {
+export type vertice = {
+  row : number;
+  col : number;
+  weight : number;
+}
+
+export type cellData = {
   row: number;
   col: number;
   visited: boolean;
@@ -20,8 +26,6 @@ type cellData = {
 export class BoardComponent implements OnInit {
   boardRows: number;
   boardCols: number;
-
-  // sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   grid: number[][] = [];
   visited: boolean[][] = [];
@@ -43,14 +47,16 @@ export class BoardComponent implements OnInit {
   dirX: number[] = [-1, 0, 1, 0];
   dirY: number[] = [0, 1, 0, -1];
 
-  // sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  start: cell = {row : 5 , col : 10};
+  end:cell = {row:20 , col:50};
 
   constructor(@Self() private el: ElementRef, private sanitizor: DomSanitizer) {
-    this.boardRows = Math.floor((el.nativeElement.offsetHeight + 2) / 20);
-    this.boardCols = Math.floor((el.nativeElement.offsetWidth + 2) / 20);
+    this.boardRows = Math.floor((el.nativeElement.offsetHeight + 2) / 22);
+    this.boardCols = Math.floor((el.nativeElement.offsetWidth + 2) / 22);
 
     this.fillGrid();
-    this.clearGrid();
+    this.data = [...this.dataDummy];
+    this.visited = [...this.visitedDummy];
   }
 
   fillGrid(): void {
@@ -95,7 +101,7 @@ export class BoardComponent implements OnInit {
     let q: cell[] = [];
     q.push({ row: startRow, col: startCol });
     this.visited[startRow][startCol] = true;
-    this.q.push({ row: startCol, col: startCol });
+    this.q.push({ row: startRow, col: startCol });
 
     while (q.length > 0) {
       let vertice: cell = q.shift()!;
@@ -111,20 +117,26 @@ export class BoardComponent implements OnInit {
         if (this.visited[nextRow][nextCol]) continue;
 
         q.push({ row: nextRow, col: nextCol });
+        this.q.push({ row: nextRow, col: nextCol });
         this.visited[nextRow][nextCol] = true;
-        this.data[this.gridDataValue[nextRow][nextCol]].visited = true;
       }
     }
   }
 
   startDFS(): void {
-    this.dfs(0, 0);
+    this.dfs(20, 30);
     this.drawBoardIntervalId = setInterval(() => {
       this.changeVisited();
     }, 50);
   }
 
-  startBFS(): void {}
+  startBFS(): void {
+    this.clearGrid();
+    this.bfs(20, 30);
+    this.drawBoardIntervalId = setInterval(() => {
+      this.changeVisited();
+    }, 10);
+  }
 
   changeVisited(): void {
     let i: cell;
@@ -134,9 +146,24 @@ export class BoardComponent implements OnInit {
     } else clearInterval(this.drawBoardIntervalId);
   }
 
+  stop(): void {}
+
   clearGrid() {
-    this.data = [...this.dataDummy];
+    let i = [...this.dataDummy];
+    this.data = i;
     this.visited = [...this.visitedDummy];
+  }
+
+  setStart(data:{row:number , col:number}){
+    if(data.row == this.end.row && data.col == this.end.col)
+      return;
+    this.start = {row:data.row , col:data.col};
+  }
+
+  setEnd(data:{row:number , col: number}){
+    if(data.row == this.start.row && data.col == this.start.col)
+      return;
+    this.end = {row:data.row , col: data.col};
   }
 
   ngOnInit(): void {}
