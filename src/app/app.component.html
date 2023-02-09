@@ -1,7 +1,7 @@
 <app-navbar
   id="navbar"
-  (dfs)="onDFS()"
-  (bfs)="onBFS()"
+  (selectalgo)="onAlgoSelection($event)"
   (clear)="onClear()"
+  (start)="onStart()"
 ></app-navbar>
 <app-board></app-board>

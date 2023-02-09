@@ -11,7 +11,7 @@
   --cell-color: #93c6e7;
   --columns: 0;
   --rows: 0;
-  --grid-border-size: 1px;
+  --grid-border-size: 0.2px;
 }
 
 body {

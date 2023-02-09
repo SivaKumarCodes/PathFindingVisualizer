@@ -1,5 +1,6 @@
 import {Component, ViewChild} from '@angular/core';
 import {BoardComponent} from './board/board.component';
+import {Algorithms} from "./Algorithms/Traversals/Traversal";
 
 @Component({
   selector: 'app-root',
@@ -7,19 +8,20 @@ import {BoardComponent} from './board/board.component';
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
-  title = 'graph-visualizer';
+  title = 'pathFinding-visualizer';
 
   @ViewChild(BoardComponent)
   private boardComponent!: BoardComponent;
 
-  onDFS(): void {
-    this.boardComponent.startDFS();
+  onAlgoSelection(algo:Algorithms):void{
+    this.boardComponent.selectAlgorithm(algo);
   }
-  onBFS(): void {
-    this.boardComponent.startBFS();
+
+  onStart(){
+    this.boardComponent.startTraversal();
   }
 
   onClear(): void {
-    this.boardComponent.clearGrid();
+    this.boardComponent.clearState();
   }
 }

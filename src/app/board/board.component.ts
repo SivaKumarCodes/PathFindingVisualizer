@@ -1,5 +1,8 @@
-import { Component, ElementRef, OnInit, Self } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import {Component, ElementRef, OnInit, Self} from '@angular/core';
+import {Algorithms, Traversal} from "../Algorithms/Traversals/Traversal";
+import {DFS} from "../Algorithms/Traversals/DFS";
+import {BFS} from "../Algorithms/Traversals/BFS";
+
 
 export type cell = {
   row: number;
@@ -12,10 +15,16 @@ export type vertice = {
   weight : number;
 }
 
+export type dirVectors = {
+  dirx : number[];
+  dirY : number[];
+}
+
 export type cellData = {
   row: number;
   col: number;
   visited: boolean;
+  inPath: boolean;
 };
 
 @Component({
@@ -27,150 +36,186 @@ export class BoardComponent implements OnInit {
   boardRows: number;
   boardCols: number;
 
+  cellSize:number = 20;
+  printInterval:number = 10;
+
+  dirVectors: dirVectors = {dirx : [0,0,1,-1] , dirY : [1,-1,0,0]};
+
+  isWeighted:boolean = false;
+
   grid: number[][] = [];
-  visited: boolean[][] = [];
-  visitedDummy: boolean[][] = [];
+
   //sent to children
   data: cellData[] = [];
-  dataDummy: cellData[] = [];
+  dataOrig: cellData[] = [];
+
+  ready:boolean = false;
+  flagMove:boolean = true;
+
+  algoSelection!:Algorithms;
 
   //setInterval Id
-  drawBoardIntervalId!: any;
+  drawBoardIntervalId!:ReturnType<typeof  setInterval>;
 
-  //Queue for drawing cells
-  q: cell[] = [];
-
-  //map two dimensional matrix to data sent to children;
+  //map two dimensional matrix to one-dimensional Array sent to children;
   gridDataValue: number[][] = [];
-
-  //grid directions
-  dirX: number[] = [-1, 0, 1, 0];
-  dirY: number[] = [0, 1, 0, -1];
+  //one dimensional Array to two-dimensional matrix;
+  dataGridValue:number[] = [];
 
   start: cell = {row : 5 , col : 10};
   end:cell = {row:20 , col:50};
 
-  constructor(@Self() private el: ElementRef, private sanitizor: DomSanitizer) {
-    this.boardRows = Math.floor((el.nativeElement.offsetHeight + 2) / 22);
-    this.boardCols = Math.floor((el.nativeElement.offsetWidth + 2) / 22);
+  selectedAlogorithm!:Traversal | undefined;
 
-    this.fillGrid();
-    this.data = [...this.dataDummy];
-    this.visited = [...this.visitedDummy];
+  constructor(@Self() private el: ElementRef) {
+    this.boardRows = Math.floor((el.nativeElement.offsetHeight + 2) / this.cellSize);
+    this.boardCols = Math.floor((el.nativeElement.offsetWidth + 2) / this.cellSize);
+    this.start = this.randomCell();
+    this.end = this.randomCell();
+    while(this.end.row == this.start.row && this.end.col == this.start.col)
+    this.end = this.randomCell();
+    this.createGrid();
+    this.data = [...this.dataOrig];
   }
 
-  fillGrid(): void {
+  randomCell():cell{
+    return {row : this.randomInt(1,this.boardRows) , col : this.randomInt(1,this.boardCols)};
+  }
+
+  randomInt(x:number , y:number){
+    return Math.floor(Math.random() * y) + x;
+  }
+
+
+  createGrid(): void {
     for (let i = 0; i < this.boardRows; i++) {
       let row = [];
-      let visRow = [];
       let gridDataRow = [];
       for (let j = 0; j < this.boardCols; j++) {
         row.push(1);
-        visRow.push(false);
-        gridDataRow.push(this.dataDummy.length);
-        this.dataDummy.push({
+        gridDataRow.push(this.dataOrig.length);
+        this.dataOrig.push({
           visited: false,
           row: i,
           col: j,
+          inPath : false
         });
       }
       this.grid.push(row);
-      this.visitedDummy.push(visRow);
       this.gridDataValue.push(gridDataRow);
     }
   }
 
-  dfs(row: number, col: number): void {
-    this.visited[row][col] = true;
-    this.q.push({ row: row, col: col });
-    for (let i = 0; i < this.dirX.length; i++) {
-      let nextRow = row + this.dirX[i];
-      let nextCol = col + this.dirY[i];
+  clearState():void{
+    for(let i of this.data){
+      i.inPath = false;
+      i.visited = false;
+    }
+    this.selectedAlogorithm = undefined;
+  }
 
-      if (nextRow < 0 || nextRow >= this.grid.length) continue;
+  startTraversal():void{
+    this.createAlgoObj();
+    if(this.selectedAlogorithm != undefined)
+         this.selectedAlogorithm.run();
 
-      if (nextCol < 0 || nextCol >= this.grid[0].length) continue;
+    this.printVisited();
+  }
 
-      if (this.visited[nextRow][nextCol]) continue;
+  createAlgoObj():void{
 
-      this.dfs(nextRow, nextCol);
+    switch (this.algoSelection){
+      case  Algorithms.DFS:
+        this.selectedAlogorithm = new DFS(this.grid,this.dirVectors,this.start,this.end);
+        break;
+      case Algorithms.BFS:
+        this.selectedAlogorithm = new BFS(this.grid,this.dirVectors,this.start,this.end);
+        break;
+      case Algorithms.DJIKTRAS:
+        this.algoSelection = Algorithms.DJIKTRAS;
+        break;
+      case Algorithms.ASTAR:
+        this.algoSelection = Algorithms.ASTAR;
+        break;
     }
   }
 
-  bfs(startRow: number, startCol: number) {
-    let q: cell[] = [];
-    q.push({ row: startRow, col: startCol });
-    this.visited[startRow][startCol] = true;
-    this.q.push({ row: startRow, col: startCol });
-
-    while (q.length > 0) {
-      let vertice: cell = q.shift()!;
-
-      for (let i = 0; i < this.dirX.length; i++) {
-        let nextRow = vertice.row + this.dirX[i];
-        let nextCol = vertice.col + this.dirY[i];
-
-        if (nextRow < 0 || nextRow >= this.grid.length) continue;
-
-        if (nextCol < 0 || nextCol >= this.grid[0].length) continue;
-
-        if (this.visited[nextRow][nextCol]) continue;
-
-        q.push({ row: nextRow, col: nextCol });
-        this.q.push({ row: nextRow, col: nextCol });
-        this.visited[nextRow][nextCol] = true;
+  printVisited():void{
+    if(this.selectedAlogorithm == undefined)
+      return;
+    let printQueue:cell[] = this.selectedAlogorithm.getVisitedQueue();
+    this.drawBoardIntervalId = setInterval(() => {
+      if(printQueue.length > 0){
+        let vertice:cell = printQueue.shift() ?? {row:-1,col:-1} ;
+        let index:number = this.gridDataValue[vertice.row][vertice.col];
+        this.data[index].visited = true;
       }
+      else{
+        clearInterval(this.drawBoardIntervalId);
+        setTimeout(() => {
+          this.printPath();
+        } , 500)
+      }
+    } , this.printInterval);
+  }
+
+  printPath():void{
+    if(this.selectedAlogorithm == undefined)
+      return;
+
+    let pathQueue = this.selectedAlogorithm.getPath();
+
+    let startInd = this.gridDataValue[this.start.row][this.start.col];
+    this.data[startInd].inPath = true;
+
+    this.drawBoardIntervalId = setInterval(() => {
+      if(pathQueue.length > 0) {
+        let vertice: cell = pathQueue.pop() ?? {row: -1, col: -1};
+        let index: number = this.gridDataValue[vertice.row][vertice.col];
+        this.data[index].inPath = true;
+      }
+      else {
+        clearInterval(this.drawBoardIntervalId);
+      }
+    } , this.printInterval + 10 );
+  }
+
+  selectAlgorithm(selection:Algorithms):void{
+    switch (selection){
+      case  Algorithms.DFS:
+        this.algoSelection = Algorithms.DFS;
+        break;
+      case Algorithms.BFS:
+        this.algoSelection = Algorithms.BFS;
+        break;
+      case Algorithms.DJIKTRAS:
+        this.algoSelection = Algorithms.DJIKTRAS;
+        break;
+      case Algorithms.ASTAR:
+        this.algoSelection = Algorithms.ASTAR;
+        break;
     }
+    this.setReady(true);
   }
 
-  startDFS(): void {
-    this.dfs(20, 30);
-    this.drawBoardIntervalId = setInterval(() => {
-      this.changeVisited();
-    }, 50);
-  }
+  setStart(data:{row:number , col:number}):void{
+    if(!this.flagMove) return;
 
-  startBFS(): void {
-    this.clearGrid();
-    this.bfs(20, 30);
-    this.drawBoardIntervalId = setInterval(() => {
-      this.changeVisited();
-    }, 10);
-  }
-
-  changeVisited(): void {
-    let i: cell;
-    if (this.q.length > 0) {
-      i = this.q.shift()!;
-      this.data[this.gridDataValue[i.row][i.col]].visited = true;
-    } else clearInterval(this.drawBoardIntervalId);
-  }
-
-  stop(): void {}
-
-  clearGrid() {
-    let i = [...this.dataDummy];
-    this.data = i;
-    this.visited = [...this.visitedDummy];
-  }
-
-  setStart(data:{row:number , col:number}){
     if(data.row == this.end.row && data.col == this.end.col)
       return;
     this.start = {row:data.row , col:data.col};
   }
 
-  setEnd(data:{row:number , col: number}){
+  setEnd(data:{row:number , col: number}):void{
+    if(!this.flagMove) return;
+
     if(data.row == this.start.row && data.col == this.start.col)
       return;
     this.end = {row:data.row , col: data.col};
   }
+  setReady(flag:boolean):void{
+    this.ready = flag;
+  }
 
   ngOnInit(): void {}
-  ngOnDestroy(): void {
-    //Called once, before the instance is destroyed.
-    //Add 'implements OnDestroy' to the class.
-    if (this.drawBoardIntervalId != undefined)
-      clearInterval(this.drawBoardIntervalId);
-  }
 }

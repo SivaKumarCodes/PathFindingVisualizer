@@ -7,3 +7,12 @@
   border: var(--grid-border-size) solid var(--border-color);
   gap: 0px;
 }
+
+app-cell{
+  border: var(--grid-border-size) solid var(--border-color) ;
+  transition: border 1.5s ease-in;
+}
+
+.visited{
+  border: var(--grid-border-size) solid white;
+}

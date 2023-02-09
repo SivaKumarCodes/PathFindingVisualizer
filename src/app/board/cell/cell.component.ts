@@ -7,9 +7,12 @@ import {Component,EventEmitter, Input, OnInit, Output} from '@angular/core';
 })
 export class CellComponent implements OnInit {
   @Output() changeStart = new EventEmitter<{row : number, col : number}>();
-
   @Output() changeEnd = new EventEmitter<{row : number , col : number}>();
+
+  @Output() visborder :EventEmitter<void> = new EventEmitter();
   @Input() visited!: boolean;
+
+  @Input() isInPath!:boolean;
   @Input() isStart!:boolean;
   @Input() isEnd!:boolean;
   @Input() row !: number;
@@ -30,16 +33,16 @@ export class CellComponent implements OnInit {
   }
   dragEnter(event:any):void{
     event.preventDefault();
-    event.target.style.backgroundColor = "lightblue";
+    event.target.classList.add("hover");
   }
   dragLeave(event:any):void{
     event.preventDefault();
-    event.target.style.backgroundColor = "white";
+    event.target.classList.remove("hover");
   }
 
   drop(event:any):void{
     event.preventDefault();
-    event.target.style.backgroundColor = "white";
+    event.target.classList.remove("hover");
     if(event.dataTransfer.getData("text") === 'start')
     this.changeStart.emit({row:this.row,col:this.col});
     else if(event.dataTransfer.getData("text") === 'end')

@@ -69,7 +69,7 @@
 .dropdown-options {
   min-height: 1.3rem;
   color: white;
-  font: 0.8em sans-serif;
+  font: 0.8em Arial, Helvetica, sans-serif;
   text-align: left;
   padding-left: 10px;
   padding-top: 2px;
@@ -106,9 +106,23 @@
 }
 
 .start:active {
-  transform: cale(0.95);
+  transform: scale(0.95);
   transform: scale(0.95);
 }
+
+
+.controls{
+  color: white;
+  font: 0.8rem Arial, Helvetica, sans-serif;
+  margin-left: 10px;
+}
+
+.controls:hover{
+  cursor: pointer;
+  color: #1bbc9b;
+}
+
+
 
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */

@@ -5,13 +5,15 @@
   [style.--rows]="boardRows"
 >
   <app-cell
-    *ngFor="let obj of data"
+    *ngFor="let obj of data "
     [isStart] = "obj.row == start.row && obj.col == start.col"
     [isEnd] = "obj.row == end.row && obj.col == end.col"
     [row]="obj.row"
     [col]="obj.col"
     id="cell-{{ 'i-' + obj.row + '-j-' + obj.col }}"
     [visited]="obj.visited"
+    [isInPath]="obj.inPath"
+    [ngClass]="{visited: obj.visited}"
     (changeStart)="setStart($event)"
     (changeEnd)="setEnd($event)"
   ></app-cell>
