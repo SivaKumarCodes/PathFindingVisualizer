@@ -25,6 +25,7 @@ export type cellData = {
   col: number;
   visited: boolean;
   inPath: boolean;
+  isWall : boolean;
 };
 
 @Component({
@@ -66,6 +67,7 @@ export class BoardComponent implements OnInit {
   end:cell = {row:20 , col:50};
 
   selectedAlogorithm!:Traversal | undefined;
+  flagclicked:boolean = false;
 
   constructor(@Self() private el: ElementRef) {
     this.boardRows = Math.floor((el.nativeElement.offsetHeight + 2) / this.cellSize);
@@ -98,7 +100,8 @@ export class BoardComponent implements OnInit {
           visited: false,
           row: i,
           col: j,
-          inPath : false
+          inPath : false,
+          isWall : false
         });
       }
       this.grid.push(row);
@@ -110,7 +113,12 @@ export class BoardComponent implements OnInit {
     for(let i of this.data){
       i.inPath = false;
       i.visited = false;
+      i.isWall = false;
     }
+    for(let i = 0 ; i < this.grid.length ; i++ )
+      for(let j = 0 ; j < this.grid[0].length ; j++)
+          this.grid[i][j] = 0;
+
     this.selectedAlogorithm = undefined;
   }
 
@@ -180,6 +188,15 @@ export class BoardComponent implements OnInit {
     } , this.printInterval + 10 );
   }
 
+  flipWall(vertice:cell){
+   let value ;
+    this.grid[vertice.row][vertice.col] >= 0 ? value = -1 : value = 0;
+    this.grid[vertice.row][vertice.col] = value;
+    const ind:number = this.gridDataValue[vertice.row][vertice.col];
+    this.data[ind].isWall = !this.data[ind].isWall;
+
+  }
+
   selectAlgorithm(selection:Algorithms):void{
     switch (selection){
       case  Algorithms.DFS:
@@ -216,6 +233,24 @@ export class BoardComponent implements OnInit {
   setReady(flag:boolean):void{
     this.ready = flag;
   }
+
+  startDraw(){
+    this.flagclicked  = true;
+    console.log(this.flagclicked);
+  }
+
+  stopDraw(){
+    this.flagclicked = false;
+    console.log(this.flagclicked);
+  }
+
+  onDraw(event:{row:number,col:number}){
+    if(this.flagclicked)
+      this.flipWall(event);
+  }
+
+
+
 
   ngOnInit(): void {}
 }

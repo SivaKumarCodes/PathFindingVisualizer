@@ -51,6 +51,11 @@
   cursor: move;
 }
 
+.wall{
+  background-color: #00425a;
+  border: var(--grid-border-size) solid white;
+}
+
 @keyframes visitedAnimation {
   0% {
     transform: scale(.3);

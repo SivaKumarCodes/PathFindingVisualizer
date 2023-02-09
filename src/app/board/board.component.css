@@ -13,6 +13,10 @@ app-cell{
   transition: border 1.5s ease-in;
 }
 
+.wall{
+  border: var(--grid-border-size) solid white;
+}
+
 .visited{
   border: var(--grid-border-size) solid white;
 }

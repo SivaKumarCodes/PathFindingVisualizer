@@ -55,6 +55,9 @@ export class BFS implements Traversal{
 
         if (this.visited[nextRow][nextCol]) continue;
 
+        if(this.graph[nextRow][nextCol] == -1)
+          continue;
+
         let nextCell = {row : nextRow , col : nextCol};
 
         this.visited[nextRow][nextCol] = true;

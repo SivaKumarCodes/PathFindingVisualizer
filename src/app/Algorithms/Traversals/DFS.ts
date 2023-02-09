@@ -51,6 +51,9 @@ export class DFS implements Traversal{
 
       if (this.visited[nextRow][nextCol]) continue;
 
+      if(this.graph[nextRow][nextCol] == -1)
+        continue;
+
       this.forest[nextRow][nextCol] = start;
 
       if(this.dfs({row:nextRow,col:nextCol}))
