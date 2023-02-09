@@ -37,7 +37,7 @@ export class BoardComponent implements OnInit {
   boardRows: number;
   boardCols: number;
 
-  cellSize:number = 20;
+  cellSize:number = 25;
   printInterval:number = 10;
 
   dirVectors: dirVectors = {dirx : [0,0,1,-1] , dirY : [1,-1,0,0]};
