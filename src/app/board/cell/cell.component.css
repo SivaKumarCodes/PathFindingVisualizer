@@ -19,7 +19,7 @@
 
 .visited {
   animation-name: visitedAnimation;
-  animation-duration: 1.5s;
+  animation-duration: 1s;
   animation-timing-function: ease-out;
   animation-delay: 50ms;
   animation-direction: alternate;

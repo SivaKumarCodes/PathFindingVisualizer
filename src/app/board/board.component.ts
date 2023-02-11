@@ -2,6 +2,8 @@ import {Component, ElementRef, OnInit, Self} from '@angular/core';
 import {Algorithms, Traversal} from "../Algorithms/Traversals/Traversal";
 import {DFS} from "../Algorithms/Traversals/DFS";
 import {BFS} from "../Algorithms/Traversals/BFS";
+import {Dijkstras} from "../Algorithms/Traversals/Dijkstras";
+import {Astar} from "../Algorithms/Traversals/Astar";
 
 
 export type cell = {
@@ -37,10 +39,12 @@ export class BoardComponent implements OnInit {
   boardRows: number;
   boardCols: number;
 
-  cellSize:number = 25;
+  cellSize:number = 30;
   printInterval:number = 10;
 
-  dirVectors: dirVectors = {dirx : [0,0,1,-1] , dirY : [1,-1,0,0]};
+  // dirVectors: dirVectors = {dirx : [0,0,1,-1] , dirY : [1,-1,0,0]};
+  dirVectors: dirVectors = {dirx : [0,1,0,-1] , dirY : [1,0,-1,0]};
+  // dirVectors: dirVectors = {dirx : [-1,1,0,0,-1,-1,1,1] , dirY : [0,0,-1,1,-1,1,-1,1]};
 
   isWeighted:boolean = false;
 
@@ -55,6 +59,8 @@ export class BoardComponent implements OnInit {
 
   algoSelection!:Algorithms;
 
+  printInProgress:boolean = false;
+
   //setInterval Id
   drawBoardIntervalId!:ReturnType<typeof  setInterval>;
 
@@ -68,6 +74,7 @@ export class BoardComponent implements OnInit {
 
   selectedAlogorithm!:Traversal | undefined;
   flagclicked:boolean = false;
+
 
   constructor(@Self() private el: ElementRef) {
     this.boardRows = Math.floor((el.nativeElement.offsetHeight + 2) / this.cellSize);
@@ -110,6 +117,8 @@ export class BoardComponent implements OnInit {
   }
 
   clearState():void{
+    if(this.printInProgress) return;
+
     for(let i of this.data){
       i.inPath = false;
       i.visited = false;
@@ -117,20 +126,34 @@ export class BoardComponent implements OnInit {
     }
     for(let i = 0 ; i < this.grid.length ; i++ )
       for(let j = 0 ; j < this.grid[0].length ; j++)
-          this.grid[i][j] = 0;
+          this.grid[i][j] = 1;
 
     this.selectedAlogorithm = undefined;
   }
 
+  clearPath():void{
+    if(this.printInProgress) return;
+
+    for(let i of this.data) {
+      i.inPath = false;
+      i.visited = false;
+    }
+  }
+
   startTraversal():void{
+    if(this.printInProgress) return;
+
     this.createAlgoObj();
     if(this.selectedAlogorithm != undefined)
          this.selectedAlogorithm.run();
 
-    this.printVisited();
+    this.printVisitedAll();
   }
 
   createAlgoObj():void{
+    if(this.printInProgress) return;
+
+    this.clearPath();
 
     switch (this.algoSelection){
       case  Algorithms.DFS:
@@ -140,56 +163,62 @@ export class BoardComponent implements OnInit {
         this.selectedAlogorithm = new BFS(this.grid,this.dirVectors,this.start,this.end);
         break;
       case Algorithms.DJIKTRAS:
-        this.algoSelection = Algorithms.DJIKTRAS;
+        this.selectedAlogorithm = new Dijkstras(this.grid,this.start,this.end,this.dirVectors);
         break;
       case Algorithms.ASTAR:
-        this.algoSelection = Algorithms.ASTAR;
+        this.selectedAlogorithm = new Astar(this.grid,this.start,this.end,this.dirVectors);
         break;
     }
   }
 
-  printVisited():void{
-    if(this.selectedAlogorithm == undefined)
-      return;
-    let printQueue:cell[] = this.selectedAlogorithm.getVisitedQueue();
+  printVisitedAll():void {
+    if (this.selectedAlogorithm == undefined)
+      return ;
+    let printQueue: cell[] = this.selectedAlogorithm.getVisitedQueue();
+
+    this.printInProgress = true;
+
     this.drawBoardIntervalId = setInterval(() => {
-      if(printQueue.length > 0){
-        let vertice:cell = printQueue.shift() ?? {row:-1,col:-1} ;
-        let index:number = this.gridDataValue[vertice.row][vertice.col];
+      if (printQueue.length > 0) {
+        let vertice: cell = printQueue.shift() ?? {row: -1, col: -1};
+        let index: number = this.gridDataValue[vertice.row][vertice.col];
         this.data[index].visited = true;
       }
-      else{
+      else {
         clearInterval(this.drawBoardIntervalId);
-        setTimeout(() => {
-          this.printPath();
-        } , 500)
+        if(this.selectedAlogorithm == undefined)
+          return;
+        if(this.selectedAlogorithm.getPath().length > 0) {
+          let startInd = this.gridDataValue[this.start.row][this.start.col];
+          this.data[startInd].inPath = true;
+        }
+        let pathQueue = this.selectedAlogorithm.getPath();
+        this.drawBoardIntervalId = setInterval(() => {
+          this.printPathAll(pathQueue);
+        } , this.printInterval)
       }
-    } , this.printInterval);
+
+    } , this.printInterval );
+
   }
 
-  printPath():void{
+  printPathAll(pathQueue:cell[]):void{
     if(this.selectedAlogorithm == undefined)
       return;
 
-    let pathQueue = this.selectedAlogorithm.getPath();
-
-    let startInd = this.gridDataValue[this.start.row][this.start.col];
-    this.data[startInd].inPath = true;
-
-    this.drawBoardIntervalId = setInterval(() => {
-      if(pathQueue.length > 0) {
+    if (pathQueue.length > 0) {
         let vertice: cell = pathQueue.pop() ?? {row: -1, col: -1};
         let index: number = this.gridDataValue[vertice.row][vertice.col];
         this.data[index].inPath = true;
       }
-      else {
-        clearInterval(this.drawBoardIntervalId);
-      }
-    } , this.printInterval + 10 );
+      else this.printInProgress = false;
+
   }
 
   flipWall(vertice:cell){
-   let value ;
+    if(this.printInProgress) return;
+
+    let value ;
     this.grid[vertice.row][vertice.col] >= 0 ? value = -1 : value = 0;
     this.grid[vertice.row][vertice.col] = value;
     const ind:number = this.gridDataValue[vertice.row][vertice.col];
@@ -216,19 +245,23 @@ export class BoardComponent implements OnInit {
   }
 
   setStart(data:{row:number , col:number}):void{
+    if(this.printInProgress) return;
     if(!this.flagMove) return;
 
     if(data.row == this.end.row && data.col == this.end.col)
       return;
     this.start = {row:data.row , col:data.col};
+
   }
 
   setEnd(data:{row:number , col: number}):void{
+    if(this.printInProgress) return;
     if(!this.flagMove) return;
 
     if(data.row == this.start.row && data.col == this.start.col)
       return;
     this.end = {row:data.row , col: data.col};
+
   }
   setReady(flag:boolean):void{
     this.ready = flag;
@@ -236,21 +269,16 @@ export class BoardComponent implements OnInit {
 
   startDraw(){
     this.flagclicked  = true;
-    console.log(this.flagclicked);
   }
 
   stopDraw(){
     this.flagclicked = false;
-    console.log(this.flagclicked);
   }
 
   onDraw(event:{row:number,col:number}){
     if(this.flagclicked)
       this.flipWall(event);
   }
-
-
-
 
   ngOnInit(): void {}
 }

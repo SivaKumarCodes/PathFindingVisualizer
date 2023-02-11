@@ -11,6 +11,7 @@ export class NavbarComponent implements OnInit {
   selectedAlogorithm !:Algorithms;
   @Output() selectalgo:EventEmitter<Algorithms> = new EventEmitter();
   @Output() clear = new EventEmitter();
+  @Output() clearpath = new EventEmitter();
 
   @Output() start = new EventEmitter();
 
@@ -65,10 +66,14 @@ export class NavbarComponent implements OnInit {
   }
   ngOnInit(): void {}
 
-
-
   clearBoard(event:Event): void {
     event.preventDefault();
     this.clear.emit();
   }
+
+  clearPath(event:Event):void{
+    event.preventDefault();
+    this.clearpath.emit();
+  }
+
 }

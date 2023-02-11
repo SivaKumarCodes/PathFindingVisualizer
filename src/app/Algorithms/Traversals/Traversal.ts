@@ -20,8 +20,5 @@ export function forestToPath(forest:cell[][] , start:cell , end:cell):cell[]{
     path.push(walk);
       walk = forest[walk.row][walk.col];
   }
-
-  console.log(path);
-
   return path;
 }

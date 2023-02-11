@@ -40,7 +40,7 @@ export class BFS implements Traversal{
   bfs():boolean {
     this.q.push({ row: this.start.row, col: this.start.col });
     this.visited[this.start.row][this.start.col] = true;
-    this.printQueue.push({ row: this.start.row, col: this.start.col });
+    this.printQueue.push(this.start);
 
     while (this.q.length > 0) {
       let vertice: cell = this.q.shift()!;

@@ -56,7 +56,6 @@ export class CellComponent implements OnInit {
   }
 
   drop(event:any):void{
-    console.log(typeof event);
     event.preventDefault();
     event.stopPropagation();
     event.cancelBubble = true;

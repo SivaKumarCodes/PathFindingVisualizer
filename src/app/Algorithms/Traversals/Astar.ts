@@ -6,10 +6,10 @@ type vertice = {
   vertice:cell;
   distance:number;
 }
-export class Dijkstras implements Traversal{
+export class Astar implements Traversal{
   private pq:PriorityQueue<vertice>;
-  private start:cell;
-  private end:cell;
+  private readonly start:cell;
+  private readonly end:cell;
   private readonly graph:number[][];
   private readonly distances:number[][];
   private isReachedEnd:boolean = false;
@@ -18,7 +18,7 @@ export class Dijkstras implements Traversal{
 
   getPath(): cell[] {
     if(this.isReachedEnd)
-    return forestToPath(this.forest,this.start,this.end);
+      return forestToPath(this.forest,this.start,this.end);
 
     return [];
   }
@@ -28,7 +28,7 @@ export class Dijkstras implements Traversal{
   }
 
   run(): void {
-    if(this.djikstras())
+    if(this.Astar())
       this.isReachedEnd = true;
   }
 
@@ -52,14 +52,22 @@ export class Dijkstras implements Traversal{
     }
   }
 
+  heuristic(x:cell):number{
+    let dx:number = Math.abs(x.row  - this.end.row);
+    let dy:number = Math.abs(x.col - this.end.col);
 
-  djikstras():boolean {
+    // return  D * (dx + dy) + (D2 - 2 * D) * Math.min(dx , dy);
+    return  dx  * dy + dy  * dx;
+  }
 
-    this.distances[this.start.row][this.start.col] = 0;
+
+  Astar():boolean {
+    this.distances[this.start.row][this.start.col] = 0 + this.heuristic(this.start);
     this.pq.add({distance : 0 , vertice : this.start})
     this.printQeueu.push(this.start);
 
     while (this.pq.size() > 0) {
+
       let v: vertice = this.pq.poll() ?? {distance : 0 , vertice:this.start};
 
       for (let i = 0; i < this.dirVectors.dirx.length; i++) {
@@ -77,7 +85,7 @@ export class Dijkstras implements Traversal{
 
         let nextCell = {row : nextRow , col : nextCol};
 
-        let alt = v.distance + edgeWeight;
+        let alt = v.distance + edgeWeight  + this.heuristic(nextCell) ;
 
         if(alt < this.distances[nextRow][nextCol]) {
           this.distances[nextRow][nextCol] = alt;

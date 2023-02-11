@@ -24,4 +24,7 @@ export class AppComponent {
   onClear(): void {
     this.boardComponent.clearState();
   }
+  onClearPath():void{
+    this.boardComponent.clearPath();
+  }
 }

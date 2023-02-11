@@ -34,7 +34,7 @@ export class DFS implements Traversal{
 
   dfs(start:cell): boolean {
     this.visited[start.row][start.col] = true;
-    this.printQueue.push({ row: start.row , col: start.col });
+    this.printQueue.push(start);
 
     if(start.row == this.end.row && start.col == this.end.col )
       return true;
