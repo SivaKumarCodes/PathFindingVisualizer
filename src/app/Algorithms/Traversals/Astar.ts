@@ -1,11 +1,7 @@
 import PriorityQueue from "priority-queue-typescript";
 import {cell, dirVectors} from "../../board/board.component";
-import { forestToPath, Traversal} from "./Traversal";
+import {forestToPath, getNeighbours, Traversal, vertice} from "./Traversal";
 
-type vertice = {
-  vertice:cell;
-  distance:number;
-}
 export class Astar implements Traversal{
   private pq:PriorityQueue<vertice>;
   private readonly start:cell;
@@ -15,6 +11,8 @@ export class Astar implements Traversal{
   private isReachedEnd:boolean = false;
   private dirVectors:dirVectors;
   private printQeueu:cell[] = [];
+
+  private visitedNeighbours:vertice[] = [];
 
   getPath(): cell[] {
     if(this.isReachedEnd)
@@ -55,9 +53,7 @@ export class Astar implements Traversal{
   heuristic(x:cell):number{
     let dx:number = Math.abs(x.row  - this.end.row);
     let dy:number = Math.abs(x.col - this.end.col);
-
-    // return  D * (dx + dy) + (D2 - 2 * D) * Math.min(dx , dy);
-    return  dx  * dy + dy  * dx;
+    return dx + dy ;
   }
 
 
@@ -68,37 +64,39 @@ export class Astar implements Traversal{
 
     while (this.pq.size() > 0) {
 
-      let v: vertice = this.pq.poll() ?? {distance : 0 , vertice:this.start};
+      let currentVertice: vertice = this.pq.poll() ?? {distance : 0 , vertice:this.start};
 
-      for (let i = 0; i < this.dirVectors.dirx.length; i++) {
-        let nextRow = v.vertice.row + this.dirVectors.dirx[i];
-        let nextCol = v.vertice.col + this.dirVectors.dirY[i];
+      let neighbours = getNeighbours(currentVertice , this.graph , this.dirVectors);
 
-        if (nextRow < 0 || nextRow >= this.graph.length) continue;
+      let flag:boolean = false;
 
-        if (nextCol < 0 || nextCol >= this.graph[0].length) continue;
+      neighbours.forEach((node)=>{
+        let row = node.vertice.row;
+        let col = node.vertice.col;
+        let distance = node.distance;
 
-        if(this.graph[nextRow][nextCol] == -1)
-          continue;
+        node.distance  += this.heuristic({row,col})
 
-        let edgeWeight = this.graph[nextRow][nextCol];
-
-        let nextCell = {row : nextRow , col : nextCol};
-
-        let alt = v.distance + edgeWeight  + this.heuristic(nextCell) ;
-
-        if(alt < this.distances[nextRow][nextCol]) {
-          this.distances[nextRow][nextCol] = alt;
-          this.pq.add({distance : this.distances[nextRow][nextCol] , vertice : nextCell});
-          this.printQeueu.push(nextCell);
-          this.forest[nextRow][nextCol] = v.vertice;
+        if( node.distance < this.distances[row][col]) {
+          this.distances[row][col] = node.distance;
+          this.pq.add({distance : node.distance , vertice : node.vertice});
+          this.printQeueu.push({row,col});
+          this.forest[row][col] = {row : currentVertice.vertice.row , col : currentVertice.vertice.col};
         }
+        if(row == this.end.row && col == this.end.col)
+          flag = true;
+      })
 
-        if(nextRow == this.end.row && nextCol == this.end.col)
-          return true;
-      }
+      if(flag) return true;
     }
+
     return false;
   }
+
+  getNearestCell(){
+    this.visitedNeighbours.sort((a ,b) => a.distance - b.distance);
+    return this.visitedNeighbours[0];
+  }
+
 
 }

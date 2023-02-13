@@ -1,6 +1,7 @@
 import {Component, ViewChild} from '@angular/core';
 import {BoardComponent} from './board/board.component';
 import {Algorithms} from "./Algorithms/Traversals/Traversal";
+import {MazeEnum} from "./Algorithms/MazeGenerators/MazeGenerator";
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,10 @@ export class AppComponent {
 
   onStart(){
     this.boardComponent.startTraversal();
+  }
+
+  onStartMaze(maze:MazeEnum){
+    this.boardComponent.selectMaze(maze);
   }
 
   onClear(): void {

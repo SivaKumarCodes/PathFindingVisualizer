@@ -18,7 +18,27 @@
     </li>
   </ul>
 </div>
+
+<div
+  class="dropdown-container noselect"
+  (click)="setMazeVisible()"
+  [ngClass]="{ 'dropdownMaze-container-active': mazeVisible }"
+>
+  <p class="dropdown-title">Mazes<span class="caret"></span></p>
+  <ul
+    class="dropdown-list"
+    [ngClass]="{ 'dropdownMaze-list-visible': mazeVisible }"
+  >
+    <li
+      class="dropdown-options"
+      *ngFor="let option of mazeOptions"
+      (click)="setMazeSelected(option)"
+    >
+      {{ option }}
+    </li>
+  </ul>
+</div>
 <button class="start" (click)="startVisulization()" >Visualize {{ algoSelected }}</button>
 
-<a href="#" (click)="clearPath($event)" class="controls">Clear Path</a>
-<a href="#" (click)="clearBoard($event)" class="controls">Clear Board</a>
+<a href="#" (click)="clearPath($event)" draggable="false" class="controls">Clear Path</a>
+<a href="#" (click)="clearBoard($event)" draggable="false" class="controls">Clear Board</a>

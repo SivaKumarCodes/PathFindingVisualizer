@@ -10,7 +10,7 @@
 }
 
 .dropdown-container {
-  min-width: 10%;
+  min-width: 8%;
   min-height: 100%;
   display: inline-block;
   /* background-color: green; */
@@ -50,11 +50,11 @@
   transition: visibility 50ms ease-in;
 }
 
-.dropdown-container-active {
+.dropdown-container-active , .dropdownMaze-container-active {
   background-color: #1bbc9b;
 }
 
-.dropdown-list-visible {
+.dropdown-list-visible , .dropdownMaze-list-visible {
   visibility: visible;
 }
 

@@ -1,11 +1,10 @@
 import PriorityQueue from "priority-queue-typescript";
 import {cell, dirVectors} from "../../board/board.component";
-import { forestToPath, Traversal} from "./Traversal";
+import { forestToPath, Traversal , vertice} from "./Traversal";
 
-type vertice = {
-  vertice:cell;
-  distance:number;
-}
+
+
+
 export class Dijkstras implements Traversal{
   private pq:PriorityQueue<vertice>;
   private start:cell;

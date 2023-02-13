@@ -4,18 +4,14 @@ import {DFS} from "../Algorithms/Traversals/DFS";
 import {BFS} from "../Algorithms/Traversals/BFS";
 import {Dijkstras} from "../Algorithms/Traversals/Dijkstras";
 import {Astar} from "../Algorithms/Traversals/Astar";
+import {MazeEnum, MazeGenerator} from "../Algorithms/MazeGenerators/MazeGenerator";
+import {BinaryTreeMaze} from "../Algorithms/MazeGenerators/BinaryTreeMaze";
 
 
 export type cell = {
   row: number;
   col: number;
 };
-
-export type vertice = {
-  row : number;
-  col : number;
-  weight : number;
-}
 
 export type dirVectors = {
   dirx : number[];
@@ -41,6 +37,11 @@ export class BoardComponent implements OnInit {
 
   cellSize:number = 30;
   printInterval:number = 10;
+
+  selectedMaze!:MazeEnum;
+  MazeGenerator!:MazeGenerator;
+
+  mazePrintQueue!:cell[];
 
   // dirVectors: dirVectors = {dirx : [0,0,1,-1] , dirY : [1,-1,0,0]};
   dirVectors: dirVectors = {dirx : [0,1,0,-1] , dirY : [1,0,-1,0]};
@@ -174,15 +175,26 @@ export class BoardComponent implements OnInit {
   printVisitedAll():void {
     if (this.selectedAlogorithm == undefined)
       return ;
+
+
     let printQueue: cell[] = this.selectedAlogorithm.getVisitedQueue();
 
     this.printInProgress = true;
 
+
     this.drawBoardIntervalId = setInterval(() => {
-      if (printQueue.length > 0) {
-        let vertice: cell = printQueue.shift() ?? {row: -1, col: -1};
-        let index: number = this.gridDataValue[vertice.row][vertice.col];
-        this.data[index].visited = true;
+      if (printQueue?.length > 0) {
+        let i:number;
+        if(printQueue.length >= 10)
+          i = 10;
+        else
+          i = printQueue.length;
+
+        while (i-- > 0) {
+          let vertice: cell = printQueue.shift() ?? {row: -1, col: -1};
+          let index: number = this.gridDataValue[vertice.row][vertice.col];
+          this.data[index].visited = true;
+        }
       }
       else {
         clearInterval(this.drawBoardIntervalId);
@@ -217,7 +229,6 @@ export class BoardComponent implements OnInit {
 
   flipWall(vertice:cell){
     if(this.printInProgress) return;
-
     let value ;
     this.grid[vertice.row][vertice.col] >= 0 ? value = -1 : value = 0;
     this.grid[vertice.row][vertice.col] = value;
@@ -225,6 +236,47 @@ export class BoardComponent implements OnInit {
     this.data[ind].isWall = !this.data[ind].isWall;
 
   }
+
+  selectMaze(selection:MazeEnum){
+    this.setReady(false);
+    let graphCopy:number[][] = this.grid.map(function(arr) {
+      return arr.slice();
+    });
+
+    switch (selection){
+      case MazeEnum.BinaryTreeMaze:
+        this.selectedMaze = MazeEnum.BinaryTreeMaze;
+        this.MazeGenerator = new BinaryTreeMaze(graphCopy);
+        break;
+    }
+    this.MazeGenerator.generateMaze();
+    this.mazePrintQueue = this.MazeGenerator.getPrintQueue();
+    this.setReady(false);
+
+      this.drawBoardIntervalId = setInterval(() => {
+        this.printMaze(this.mazePrintQueue);
+      }, this.printInterval);
+  }
+
+  printMaze(printQueue:cell[]):void{
+    let printLength = 1;
+    if(printQueue.length > 0) {
+      if (printQueue.length >= 10)  printLength = 10;
+       else printLength = printQueue.length;
+
+      while (printLength-- > 0) {
+        let vertice:cell = printQueue.pop() ?? {row : -1 , col : -1};
+        this.flipWall(vertice);
+      }
+    }
+    else {
+      clearInterval(this.drawBoardIntervalId)
+      this.setReady(true);
+    }
+
+  }
+
+
 
   selectAlgorithm(selection:Algorithms):void{
     switch (selection){

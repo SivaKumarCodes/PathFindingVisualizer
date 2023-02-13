@@ -53,7 +53,7 @@
 
 .wall{
   background-color: #00425a;
-  border: var(--grid-border-size) solid white;
+  border: var(--grid-border-size) solid #00425a;
 }
 
 @keyframes visitedAnimation {

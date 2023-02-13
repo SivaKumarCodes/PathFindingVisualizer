@@ -20,7 +20,7 @@ app-navbar {
   background-color: var(--navbar-color);
   display: flex;
   justify-content: flex-start;
-  gap: 2rem;
+  gap: 1rem;
   align-items: center;
 }
 
