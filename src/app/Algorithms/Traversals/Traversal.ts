@@ -10,6 +10,8 @@ export interface Traversal{
 export type vertice = {
   vertice:cell;
   distance:number;
+
+  totalDistance:number;
 }
 
 export enum Algorithms {
@@ -28,9 +30,9 @@ export function forestToPath(forest:cell[][] , start:cell , end:cell):cell[]{
   }
   return path;
 }
-export function getNeighbours(currentVertice: vertice, graph: number[][], dirVectors: dirVectors):vertice[]{
+export function getNeighbours(currentVertice: vertice, graph: number[][], dirVectors: dirVectors):cell[]{
 
-  let neighbours:vertice[] = [];
+  let neighbours:cell[] = [];
 
   for (let i = 0; i < dirVectors.dirx.length; i++) {
     let nextRow = currentVertice.vertice.row + dirVectors.dirx[i];
@@ -43,9 +45,8 @@ export function getNeighbours(currentVertice: vertice, graph: number[][], dirVec
     if (graph[nextRow][nextCol] == -1)
       continue;
 
-    let edgeWeight = graph[nextRow][nextCol];
+    neighbours.push({row : nextRow , col : nextCol})
 
-    neighbours.push({vertice : {row:nextRow , col : nextCol} , distance : currentVertice.distance + edgeWeight});
   }
 
   return neighbours;

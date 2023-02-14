@@ -1,12 +1,15 @@
 import PriorityQueue from "priority-queue-typescript";
 import {cell, dirVectors} from "../../board/board.component";
-import { forestToPath, Traversal , vertice} from "./Traversal";
+import { forestToPath, Traversal } from "./Traversal";
 
-
+type vertice = {
+  vertice:cell,
+  distance:number;
+}
 
 
 export class Dijkstras implements Traversal{
-  private pq:PriorityQueue<vertice>;
+  private priority:vertice[];
   private start:cell;
   private end:cell;
   private readonly graph:number[][];
@@ -33,12 +36,12 @@ export class Dijkstras implements Traversal{
 
   private forest:cell[][] = [];
   constructor(graph:number[][] , start:cell , end:cell , dirVectors:dirVectors ) {
-    this.pq = new PriorityQueue<vertice>( graph[0].length * graph.length,(a:vertice,b:vertice) => a.distance - b.distance);
     this.graph = graph;
     this.start = start;
     this.end = end;
     this.dirVectors = dirVectors;
     this.distances = [];
+    this.priority = [];
 
     for(let i of graph)
       this.forest.push([]);
@@ -55,11 +58,11 @@ export class Dijkstras implements Traversal{
   djikstras():boolean {
 
     this.distances[this.start.row][this.start.col] = 0;
-    this.pq.add({distance : 0 , vertice : this.start})
+    this.priority.push({distance : 0 , vertice : this.start})
     this.printQeueu.push(this.start);
 
-    while (this.pq.size() > 0) {
-      let v: vertice = this.pq.poll() ?? {distance : 0 , vertice:this.start};
+    while (this.priority.length > 0) {
+      let v: vertice = this.getNearestCell();
 
       for (let i = 0; i < this.dirVectors.dirx.length; i++) {
         let nextRow = v.vertice.row + this.dirVectors.dirx[i];
@@ -80,7 +83,7 @@ export class Dijkstras implements Traversal{
 
         if(alt < this.distances[nextRow][nextCol]) {
           this.distances[nextRow][nextCol] = alt;
-          this.pq.add({distance : this.distances[nextRow][nextCol] , vertice : nextCell});
+          this.priority.push({distance : this.distances[nextRow][nextCol] , vertice : nextCell});
           this.printQeueu.push(nextCell);
           this.forest[nextRow][nextCol] = v.vertice;
         }
@@ -90,6 +93,14 @@ export class Dijkstras implements Traversal{
       }
     }
     return false;
+  }
+
+  private  getNearestCell():vertice{
+    this.priority.sort((a ,b) => a.distance - b.distance);
+    let result:vertice =  this.priority[0];
+    this.priority.splice(0,1);
+
+    return result;
   }
 
 }

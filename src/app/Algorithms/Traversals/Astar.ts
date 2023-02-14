@@ -3,7 +3,8 @@ import {cell, dirVectors} from "../../board/board.component";
 import {forestToPath, getNeighbours, Traversal, vertice} from "./Traversal";
 
 export class Astar implements Traversal{
-  private pq:PriorityQueue<vertice>;
+
+  private priority:vertice[] = [];
   private readonly start:cell;
   private readonly end:cell;
   private readonly graph:number[][];
@@ -12,12 +13,12 @@ export class Astar implements Traversal{
   private dirVectors:dirVectors;
   private printQeueu:cell[] = [];
 
+  private heuristics:number[][] = [];
   private visitedNeighbours:vertice[] = [];
 
   getPath(): cell[] {
     if(this.isReachedEnd)
       return forestToPath(this.forest,this.start,this.end);
-
     return [];
   }
 
@@ -28,24 +29,27 @@ export class Astar implements Traversal{
   run(): void {
     if(this.Astar())
       this.isReachedEnd = true;
+    console.log(this.priority)
   }
 
   private forest:cell[][] = [];
   constructor(graph:number[][] , start:cell , end:cell , dirVectors:dirVectors ) {
-    this.pq = new PriorityQueue<vertice>( graph[0].length * graph.length,(a:vertice,b:vertice) => a.distance - b.distance);
     this.graph = graph;
     this.start = start;
     this.end = end;
     this.dirVectors = dirVectors;
     this.distances = [];
 
-    for(let i of graph)
+    for(let i of graph) {
       this.forest.push([]);
+      this.heuristics.push([]);
+    }
 
     for(let i = 0 ; i < graph.length ; i++) {
       this.distances.push([]);
       for (let j = 0; j < graph[0].length; j++) {
         this.distances[i].push(Number.MAX_VALUE);
+        this.heuristics[i].push(0);
       }
     }
   }
@@ -53,50 +57,69 @@ export class Astar implements Traversal{
   heuristic(x:cell):number{
     let dx:number = Math.abs(x.row  - this.end.row);
     let dy:number = Math.abs(x.col - this.end.col);
+
     return dx + dy ;
   }
 
 
   Astar():boolean {
-    this.distances[this.start.row][this.start.col] = 0 + this.heuristic(this.start);
-    this.pq.add({distance : 0 , vertice : this.start})
+    this.distances[this.start.row][this.start.col] = 0;
+    let startHeuristic = this.heuristic(this.start);
+    this.heuristics[this.start.row][this.start.col] = startHeuristic;
+    this.priority.push({distance : 0 , totalDistance: 0 + startHeuristic , vertice : this.start})
     this.printQeueu.push(this.start);
 
-    while (this.pq.size() > 0) {
+    while (this.priority.length > 0) {
+      console.log('hell0');
 
-      let currentVertice: vertice = this.pq.poll() ?? {distance : 0 , vertice:this.start};
-
-      let neighbours = getNeighbours(currentVertice , this.graph , this.dirVectors);
+      let currentVertice: vertice = this.getNearestCell();
 
       let flag:boolean = false;
 
-      neighbours.forEach((node)=>{
-        let row = node.vertice.row;
-        let col = node.vertice.col;
-        let distance = node.distance;
+      for (let i = 0; i < this.dirVectors.dirx.length; i++) {
+        let nextRow = currentVertice.vertice.row + this.dirVectors.dirx[i];
+        let nextCol = currentVertice.vertice.col + this.dirVectors.dirY[i];
 
-        node.distance  += this.heuristic({row,col})
+        if (nextRow < 0 || nextRow >= this.graph.length) continue;
 
-        if( node.distance < this.distances[row][col]) {
-          this.distances[row][col] = node.distance;
-          this.pq.add({distance : node.distance , vertice : node.vertice});
+        if (nextCol < 0 || nextCol >= this.graph[0].length) continue;
+
+        if (this.graph[nextRow][nextCol] == -1)
+          continue;
+
+        let row = nextRow;
+        let col = nextCol;
+
+        this.heuristics[row][col] = this.heuristic({row,col})
+
+
+        if(currentVertice.distance + this.graph[row][col]  < this.distances[row][col]) {
+          this.distances[row][col] = currentVertice.distance + this.graph[row][col];
+          let heuristic = this.heuristic({row:row,col:col});
+          this.heuristics[row][col] = heuristic;
+
+          this.priority.push({distance : this.distances[row][col] , totalDistance : heuristic + this.distances[row][col]  ,  vertice : {row : row , col : col}});
           this.printQeueu.push({row,col});
           this.forest[row][col] = {row : currentVertice.vertice.row , col : currentVertice.vertice.col};
         }
         if(row == this.end.row && col == this.end.col)
-          flag = true;
-      })
+          return  true;
 
-      if(flag) return true;
     }
+      }
+
 
     return false;
   }
 
-  getNearestCell(){
-    this.visitedNeighbours.sort((a ,b) => a.distance - b.distance);
-    return this.visitedNeighbours[0];
-  }
+private  getNearestCell():vertice{
+    this.priority.sort((a ,b) => a.totalDistance - b.totalDistance);
+    let result:vertice =  this.priority[0];
+    console.log(this.priority.length);
+    this.priority.splice(0,1);
+    console.log(this.priority.length);
 
+    return result;
+  }
 
 }

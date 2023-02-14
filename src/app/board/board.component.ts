@@ -36,7 +36,7 @@ export class BoardComponent implements OnInit {
   boardCols: number;
 
   cellSize:number = 30;
-  printInterval:number = 10;
+  printInterval:number = 5;
 
   selectedMaze!:MazeEnum;
   MazeGenerator!:MazeGenerator;
@@ -261,7 +261,7 @@ export class BoardComponent implements OnInit {
   printMaze(printQueue:cell[]):void{
     let printLength = 1;
     if(printQueue.length > 0) {
-      if (printQueue.length >= 10)  printLength = 10;
+      if (printQueue.length >= 20)  printLength = 20;
        else printLength = printQueue.length;
 
       while (printLength-- > 0) {
